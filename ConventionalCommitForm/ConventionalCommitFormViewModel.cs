@@ -217,7 +217,7 @@ namespace ConventionalCommitForm
             commitMessage.Append(SelectedType);
             commitMessage.Append(FormatOptionalParameter("(", Scope, ")"));
             commitMessage.Append(": " + Description);
-            commitMessage.Append(FormatOptionalParameter("\n\n", Body, string.Empty));
+            commitMessage.Append(FormatOptionalParameter("\n\n", Body?.Trim(), string.Empty));
             commitMessage.Append(FormatOptionalParameter("\n\n", Footer, string.Empty));
             return commitMessage.ToString();
         }
@@ -281,7 +281,7 @@ namespace ConventionalCommitForm
             {
                 Type = SelectedType,
                 Scope = Scope,
-                Body = Body,
+                Body = Body?.Trim(),
                 Description = Description,
                 Footer = Footer
             };
