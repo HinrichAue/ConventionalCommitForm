@@ -35,6 +35,8 @@
         <DockPanel>
             <ComboBox ItemsSource="{Binding Types}"
                       SelectedItem="{Binding SelectedType}" />
+            <CheckBox IsChecked="{Binding BreakingChange}"
+                      VerticalAlignment="Center"/>
             <ComboBox MinWidth="200"
                       IsEditable="True"
                       ItemsSource="{Binding Scopes}"

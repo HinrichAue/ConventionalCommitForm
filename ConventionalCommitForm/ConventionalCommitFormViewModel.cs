@@ -22,15 +22,16 @@ namespace ConventionalCommitForm
         private string _footer;
         private string _scope;
         private string _selectedType;
+        private bool _breakingChange;
 
         private IEnumerable<string> _types;
-         
+
         public ConventionalCommitFormViewModel()
         {
             Scopes = new ObservableCollection<string>();
             Footers = new ObservableCollection<string>();
 
-            _types = new[] { "fix", "feat​", "docs​", "refactor​", "test", "chore​", "build​", "ci​", "style", "perf​", "cleanup" };
+            _types = new[] { "fix", "feat", "docs", "refactor", "test", "chore", "build", "ci", "style", "perf", "cleanup" };
             SelectedType = _types.First();
 
             WindowLoadedCommand = new DelegateCommand(OnWindowLoaded);
@@ -69,6 +70,16 @@ namespace ConventionalCommitForm
             {
                 SetProperty(ref _selectedType, value);
                 RaisePropertyChanged(nameof(HeaderWidth));
+            }
+        }
+        
+        public bool BreakingChange
+        {
+            get => _breakingChange;
+            set
+            {
+                SetProperty(ref _breakingChange, value);
+                RaisePropertyChanged(nameof(BreakingChange));
             }
         }
 
@@ -169,6 +180,7 @@ namespace ConventionalCommitForm
         private void InitUiFromCommitMessage(ConventionalCommitDto commitMessage)
         {
             SelectedType = commitMessage.Type;
+            BreakingChange = commitMessage.BreakingChange;
             Scope = commitMessage.Scope;
             Description = commitMessage.Description;
             Body = commitMessage.Body;
@@ -214,8 +226,9 @@ namespace ConventionalCommitForm
         {
             var commitMessage = new StringBuilder();
 
-            commitMessage.Append(SelectedType);
+            commitMessage.Append(SelectedType.Trim());
             commitMessage.Append(FormatOptionalParameter("(", Scope, ")"));
+            commitMessage.Append(BreakingChange ? "!" : string.Empty);
             commitMessage.Append(": " + Description);
             commitMessage.Append(FormatOptionalParameter("\n\n", Body?.Trim(), string.Empty));
             commitMessage.Append(FormatOptionalParameter("\n\n", Footer, string.Empty));
@@ -280,6 +293,7 @@ namespace ConventionalCommitForm
             return new ConventionalCommitDto
             {
                 Type = SelectedType,
+                BreakingChange = BreakingChange,
                 Scope = Scope,
                 Body = Body?.Trim(),
                 Description = Description,
@@ -290,6 +304,7 @@ namespace ConventionalCommitForm
         public class ConventionalCommitDto : IEquatable<ConventionalCommitDto>
         {
             public string Type { get; set; }
+            public bool BreakingChange { get; set; }
             public string Scope { get; set; }
             public string Description { get; set; }
             public string Body { get; set; }
@@ -313,7 +328,7 @@ namespace ConventionalCommitForm
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(Type, Scope, Description, Body, Footer);
+                return HashCode.Combine(Type, BreakingChange, Scope, Description, Body, Footer);
             }
         }
     }
