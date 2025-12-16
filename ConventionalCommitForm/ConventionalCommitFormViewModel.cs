@@ -79,7 +79,7 @@ namespace ConventionalCommitForm
             set
             {
                 SetProperty(ref _breakingChange, value);
-                RaisePropertyChanged(nameof(BreakingChange));
+                RaisePropertyChanged(nameof(HeaderWidth));
             }
         }
 
@@ -113,7 +113,14 @@ namespace ConventionalCommitForm
             }
         }
 
-        public int HeaderWidth => FormatCommitMessage().Split("\n").Select(line => line.Length).Max();
+        public int HeaderWidth
+        {
+            get
+            {
+                var lines = FormatCommitMessage().Split("\n");
+                return lines.Any() ? lines.Select(line => line.Length).Max() : 0;
+            }
+        }
 
         public string Error => "....";
 
@@ -143,13 +150,17 @@ namespace ConventionalCommitForm
             try
             {
                 _commitHistory = (List<ConventionalCommitDto>) serializer.Deserialize(reader);
-                if (_commitHistory.Any())
+                if (_commitHistory != null && _commitHistory.Any())
                 {
                     var lastCommit = _commitHistory.First();
                     InitUiFromCommitMessage(lastCommit);
                 }
+                else
+                {
+                    _commitHistory = new List<ConventionalCommitDto>();
+                }
             }
-            catch
+            catch (Exception ex)
             {
                 _commitHistory = new List<ConventionalCommitDto>();
             }
@@ -165,7 +176,7 @@ namespace ConventionalCommitForm
         {
             var oldValue = Scope;
             Scopes.Clear();
-            Scopes.AddRange(_commitHistory.Select(cm => cm.Scope).Distinct());
+            Scopes.AddRange(_commitHistory.Select(cm => cm.Scope).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct());
             Scope = oldValue;
         }
 
@@ -173,7 +184,7 @@ namespace ConventionalCommitForm
         {
             var oldValue = Footer;
             Footers.Clear();
-            Footers.AddRange(_commitHistory.Select(cm => cm.Footer).Distinct());
+            Footers.AddRange(_commitHistory.Select(cm => cm.Footer).Where(f => !string.IsNullOrWhiteSpace(f)).Distinct());
             Footer = oldValue;
         }
 
@@ -314,7 +325,8 @@ namespace ConventionalCommitForm
             {
                 if (ReferenceEquals(null, other)) return false;
                 if (ReferenceEquals(this, other)) return true;
-                return Type == other.Type && Scope == other.Scope && Description == other.Description &&
+                return Type == other.Type && BreakingChange == other.BreakingChange && 
+                       Scope == other.Scope && Description == other.Description &&
                        Body == other.Body && Footer == other.Footer;
             }
 
