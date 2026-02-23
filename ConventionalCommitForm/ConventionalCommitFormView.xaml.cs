@@ -1,9 +1,11 @@
-﻿namespace ConventionalCommitForm
+﻿using System.Windows;
+
+namespace ConventionalCommitForm
 {
     /// <summary>
     /// Interaction logic for ConventionalCommitFormView.xaml
     /// </summary>
-    public partial class ConventionalCommitFormView
+    public partial class ConventionalCommitFormView : Window
     {
         public ConventionalCommitFormView()
         {

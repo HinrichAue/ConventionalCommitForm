@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Xml.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Configuration;
 
 namespace ConventionalCommitForm
 {
@@ -25,7 +26,8 @@ namespace ConventionalCommitForm
             Scopes = new ObservableCollection<string>();
             Footers = new ObservableCollection<string>();
 
-            _types = ["build", "ci", "chore", "cleanup", "debug", "docs", "feat", "fix", "perf", "refactor", "style", "test"];
+            // Load types from appsettings.json
+            _types = LoadCommitTypesFromConfiguration();
             SelectedType = _types.First();
 
             WindowLoadedCommand = new RelayCommand(OnWindowLoaded);
@@ -34,6 +36,30 @@ namespace ConventionalCommitForm
             SetPreviousCommitMessageCommend =
                 new RelayCommand(SetPreviousCommitMessage, CanSetPreviousCommitMessage);
             SetNextCommitMessageCommand = new RelayCommand(SetNextCommitMessage, CanSetNextCommitMessage);
+        }
+
+        private IEnumerable<string> LoadCommitTypesFromConfiguration()
+        {
+            try
+            {
+                var configuration = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .Build();
+
+                var typesSection = configuration.GetSection("ConventionalCommit:Types");
+                var types = typesSection.GetChildren().Select(x => x.Value).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+
+                // Return configured types if available, otherwise use defaults
+                return types.Length > 0 
+                    ? types! 
+                    : ["build", "ci", "chore", "cleanup", "debug", "docs", "feat", "fix", "perf", "refactor", "style", "test"];
+            }
+            catch
+            {
+                // Fallback to default types if configuration fails
+                return ["build", "ci", "chore", "cleanup", "debug", "docs", "feat", "fix", "perf", "refactor", "style", "test"];
+            }
         }
 
         public ObservableCollection<string> Scopes { get; set; }
